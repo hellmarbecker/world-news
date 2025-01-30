@@ -1,9 +1,9 @@
-CREATE TABLE `imply-news-raw` (
+CREATE TABLE `world-news-raw` (
   `kafka.key` STRING,
   `payload` STRING
 ) WITH
   'connector' = 'kafka',
-  'topic' = 'imply-news',
+  'topic' = 'world-news',
   'properties.group.id' = 'flinkDemoGroup',
   'scan.startup.mode' = 'earliest-offset',
   'properties.bootstrap.servers' = 'BOOTSTRAP_SERVER',

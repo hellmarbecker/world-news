@@ -1,6 +1,6 @@
-# imply-news
+# world-news
 
-## imply-news: Data generator for a publisher
+## world-news: Data generator for a publisher
 
 This simulates data for a news outlet. It has free and premium content, a subscribe page, clickbait (multi-page content), and affiliate outlinks.
 
@@ -71,6 +71,3 @@ Driver script, handles mode selection.
 
 Crontab for the default user (`admin` on Debian.) This will cause a drop in conversion rates 1x per week for a few hours. Install using `crontab -e`.
 
-#### `cube-imply-news.json`
-
-This is not strictly part of the project. It shows an example of a Pivot cube configuration with suggested dimensions and measures for the Imply News data set.

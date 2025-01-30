@@ -13,9 +13,9 @@ General:
     maxUsers: 100000
     userChangeProbability: 0.005
     # clickTopic and sessionTopic can be the same
-    clickTopic: "imply-news-clicks-sr"
-    sessionTopic: "imply-news-sessions-sr"
-    userTopic: "imply-news-users-sr"
+    clickTopic: "world-news-clicks-sr"
+    sessionTopic: "world-news-sessions-sr"
+    userTopic: "world-news-users-sr"
 Kafka:
     bootstrap.servers: "localhost:9092"
 SchemaRegistry:

@@ -21,6 +21,6 @@
 # For more information see the manual pages of crontab(5) and cron(8)
 # 
 # m h  dom mon dow   command
-00 07 * * 05 ( cd /home/admin/imply-news && ./news_simulator.sh start special >/dev/null )
-00 11 * * 05 ( cd /home/admin/imply-news && ./news_simulator.sh start default >/dev/null )
-05 * * * * ( cd /home/admin/imply-news && ./news_simulator.sh start >/dev/null )
+00 07 * * 05 ( cd /home/admin/world-news && ./news_simulator.sh start special >/dev/null )
+00 11 * * 05 ( cd /home/admin/world-news && ./news_simulator.sh start default >/dev/null )
+05 * * * * ( cd /home/admin/world-news && ./news_simulator.sh start >/dev/null )

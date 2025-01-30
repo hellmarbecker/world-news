@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BASE=~/imply-news
+BASE=~/world-news
 PIDFILE=/tmp/news_simulator.pid
 
 LOG=/tmp/news_simulator.log

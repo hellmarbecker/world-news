@@ -10,8 +10,8 @@ General:
     minSleep: 0.001
     maxSleep: 0.004
     # clickTopic and sessionTopic can be the same
-    clickTopic: "imply-news-test"
-    sessionTopic: "imply-news-test"
+    clickTopic: "world-news-test"
+    sessionTopic: "world-news-test"
 Kafka:
     bootstrap.servers: "localhost:9092"
 StateMachine:

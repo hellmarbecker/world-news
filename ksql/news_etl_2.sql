@@ -1,8 +1,8 @@
 -- Transform to AVRO
 -- This creates a schema registry entry
 
-CREATE OR REPLACE STREAM `imply-news-avro` WITH (
-  KAFKA_TOPIC='imply-news-avro',
+CREATE OR REPLACE STREAM `world-news-avro` WITH (
+  KAFKA_TOPIC='world-news-avro',
   PARTITIONS=6,
   KEY_FORMAT='KAFKA',
   VALUE_FORMAT='AVRO' ) AS
@@ -28,12 +28,12 @@ SELECT
   `place_name`,
   `country_code`,
   `timezone`
-FROM `imply-news-cooked`;
+FROM `world-news-cooked`;
 
 -- Sessionize in ksqlDB using a SESSION window. Because of the EMIT FINAL clause this has to be a TABLE.
 
-CREATE OR REPLACE TABLE `imply-news-sessions` WITH (
-  KAFKA_TOPIC='imply-news-sessions',
+CREATE OR REPLACE TABLE `world-news-sessions` WITH (
+  KAFKA_TOPIC='world-news-sessions',
   PARTITIONS=6,
   KEY_FORMAT='KAFKA',
   VALUE_FORMAT='JSON' ) AS
@@ -55,15 +55,15 @@ SELECT
   MAX(`country_code`) AS `country_code`,
   MAX(`timezone`) AS `timezone`,
   COUNT(*) AS `session_depth`
-FROM `imply-news-cooked`
+FROM `world-news-cooked`
 WINDOW SESSION (30 MINUTES)
 GROUP BY `sid_key`
 EMIT FINAL;
 
 -- Session changelog
 
-CREATE OR REPLACE TABLE `imply-news-sessions-changes` WITH (
-  KAFKA_TOPIC='imply-news-sessions-changes',
+CREATE OR REPLACE TABLE `world-news-sessions-changes` WITH (
+  KAFKA_TOPIC='world-news-sessions-changes',
   PARTITIONS=6,
   KEY_FORMAT='KAFKA',
   VALUE_FORMAT='JSON' ) AS
@@ -84,7 +84,7 @@ SELECT
   MAX(`country_code`) AS `country_code`,
   MAX(`timezone`) AS `timezone`,
   COUNT(*) AS session_depth
-FROM `imply-news-cooked`
+FROM `world-news-cooked`
 WINDOW SESSION (30 MINUTES)
 GROUP BY `sid`
 EMIT CHANGES;

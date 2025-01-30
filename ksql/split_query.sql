@@ -4,7 +4,7 @@ SELECT
   sid,
   payload,
   EXTRACTJSONFIELD(payload, '$.recordType') AS recordtype 
-FROM "imply-news-raw" 
+FROM "world-news-raw" 
 WHERE EXTRACTJSONFIELD(payload, '$.recordType') = 'session' 
 EMIT CHANGES;
 

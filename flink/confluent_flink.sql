@@ -1,17 +1,17 @@
 -- this works
-alter table `imply-news-clicks-sr` add (kafka_timestamp TIMESTAMP_LTZ(3) METADATA FROM 'timestamp' VIRTUAL)
+alter table `world-news-clicks-sr` add (kafka_timestamp TIMESTAMP_LTZ(3) METADATA FROM 'timestamp' VIRTUAL)
 
 -- work in progress, this one fails with "Temporal table join currently only supports 'FOR SYSTEM_TIME AS OF' left table's time attribute field"
 select
-  `imply-news-clicks-sr`.`contentId`,
-  `imply-news-users-sr`.`version`
+  `world-news-clicks-sr`.`contentId`,
+  `world-news-users-sr`.`version`
 from
-  `imply-news-clicks-sr` 
-left join `imply-news-users-sr` for system_time as of `imply-news-clicks-sr`.`kafka_timestamp`
-on `imply-news-clicks-sr`.uid = `imply-news-users-sr`.uid
+  `world-news-clicks-sr` 
+left join `world-news-users-sr` for system_time as of `world-news-clicks-sr`.`kafka_timestamp`
+on `world-news-clicks-sr`.uid = `world-news-users-sr`.uid
 
 -- create table for users
-CREATE TABLE `default`.`cluster_0`.`imply-news-users-sr` (
+CREATE TABLE `default`.`cluster_0`.`world-news-users-sr` (
   `key` VARBINARY(2147483647),
   `timestamp` BIGINT NOT NULL,
   `version` BIGINT NOT NULL,
