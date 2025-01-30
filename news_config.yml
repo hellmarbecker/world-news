@@ -7,6 +7,8 @@ IncludeOptional:
 General:
     # Maximum number of sessions that can be open in the simulator at the same time
     maxSessions: 50000
+    maxUsers: 100000
+    userChangeProbability: 0.0005
     minSleep: 0.001
     maxSleep: 0.004
     # clickTopic and sessionTopic can be the same
