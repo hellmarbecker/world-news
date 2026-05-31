@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BASE=~/world-news
+BASE="$(cd "$(dirname "$0")" && pwd)"
 PIDFILE=/tmp/news_simulator.pid
 
 LOG=/tmp/news_simulator.log

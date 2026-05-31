@@ -1,10 +1,10 @@
 pyyaml
-scipy==1.10.1
-Faker==18.4.0
-confluent-kafka==2.1.1
-mergedeep==1.3.4
+scipy
+Faker
+confluent-kafka[schemaregistry,avro,json,protobuf]
+mergedeep
 requests
 fastavro
 jsonschema
 protobuf
-
+pytest

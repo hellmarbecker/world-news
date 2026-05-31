@@ -394,7 +394,7 @@ def main():
             if random.random() < 0.5 and len(allSessions) < maxSessions:
                 sessionId += 1
                 logging.debug(f'--> Creating Session: id {sessionId}')
-                salesAmount = random.uniform(10.0, 90.0);
+                # salesAmount = random.uniform(10.0, 90.0);
 
                 # Pick the right transition matrix for the mode we are running in
                 States = config['StateMachine']['States']
@@ -402,8 +402,7 @@ def main():
 
                 uid = userMask.format(fake.random_int(min=0, max=maxUsers-1))
                 if uid not in allUsers:
-                    newPlace = fake.location_on_land()
-                    newUser = User( 
+                    newUser = User(
                         updatedTime = int(time.time()),
                         version = 1,
                         recordType = 'user',
