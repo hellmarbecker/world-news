@@ -124,7 +124,7 @@ class PlainJSONSerializer(Serializer): # serialize json without schema registry
 
     def __call__(self, obj, ctx=None):
 
-        return json.dumps(obj)
+        return json.dumps(obj, default=str).encode('utf-8')
 
 
 def srSerializer(config, item): # item is click or session
