@@ -19,8 +19,10 @@ setProfile() {
 }
 
 status() {
-    # return 0 if running
-    signal=${1:-"USR1"}
+    # return 0 if running. Default signal is 0 — kill -0 probes the PID
+    # without delivering a signal. Callers that pass HUP (start/reload)
+    # use this same function to trigger a config reread.
+    signal=${1:-"0"}
     echo "==== Status check with signal $signal"
     if [ -f $PIDFILE ]
     then
