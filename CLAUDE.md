@@ -27,7 +27,7 @@ Install deps:
 pip3 install -r requirements.txt
 ```
 
-Daemon-style control via `news_simulator.sh` (writes PID to `/tmp/news_simulator.pid`, logs to `/tmp/news_simulator.log`). The script assumes `BASE=~/world-news` — edit that line if running from a different path:
+Daemon-style control via `news_simulator.sh` (writes PID to `/tmp/news_simulator.pid`, logs to `/tmp/news_simulator.log`). `BASE` resolves to the script's own directory at runtime, so the script works from any checkout location:
 ```
 ./news_simulator.sh start [profile]       # start, optionally setting a mode
 ./news_simulator.sh stop|restart|status
@@ -54,7 +54,7 @@ Switch modes on a running process without restart: edit `news_dynamic.yml` (one 
 `timeEnvelope` is 24 integers (0–1000) representing relative traffic per hour of day. The code tiles the array 3× and fits a cubic spline (`scipy.interpolate.splrep`) so the wraparound at hour 23→0 is smooth. The current weight scales `random.uniform(minSleep, maxSleep)` by `1000.0 / weight`, so larger envelope values produce shorter sleeps and higher event rates.
 
 ### Main loop (`news_process.py:323` onward)
-Each iteration: probabilistically create a new `Session` (capped by `maxSessions`); pick a random existing session, call `advance()`, and emit a `click` record; if `advance()` lands in an exit state the `KeyError` path emits the `session` record and drops the session. Users are interned in `allUsers` keyed by `uid` (format `u{padded-num}` with width derived from `maxUsers`); with probability `userChangeProbability` an existing user's `place` gets re-rolled and their `version` bumped (user records are currently created in memory but **not emitted** — `emitUser` exists but the call sites are commented out).
+Each iteration: probabilistically create a new `Session` (capped by `maxSessions`); pick a random existing session, call `advance()` (which also refreshes `contentId`/`subContentId` so each click lands on a fresh article), and emit a `click` record; if `advance()` lands in an exit state the `KeyError` path emits the `session` record and drops the session. Users are interned in `allUsers` keyed by `uid` (format `u{padded-num}` with width derived from `maxUsers`); with probability `userChangeProbability` an existing user's `place` and `updatedTime` are refreshed and `version` is bumped. User records are emitted via `emitUser` to `userTopic` on creation and on address change — but only if `userTopic` is present in the config. Configs without it (`news_config.yml`, `news_config_meetup.yml`, `news_config_small.yml`) skip user emission entirely.
 
 ### Serialization
 `srSerializer(config, item)` returns one of:
@@ -68,10 +68,20 @@ Note: `session.proto` declares explicit `int32` fields for each state in `StateM
 
 ### Signals
 - `SIGHUP` — sets the `reconfigure` flag, breaks the inner loop, re-reads config. Existing sessions persist across the reload (only new ones see the new matrix/distributions); `maxSessions` increases take effect but does not prune already-open sessions.
-- `SIGUSR1` — ignored; intended as a liveness probe via `kill -USR1`'s exit code (used by `news_simulator.sh status`).
+- `SIGUSR1` — installed as `SIG_IGN`. No longer used for liveness — `news_simulator.sh status` uses `kill -0` (no-signal probe) by default. The handler is kept harmless in case external monitors still send the signal.
 
 ### Downstream SQL
 `ksql/` and `flink/` hold reference ETL queries against the emitted topics — not run by anything in this repo, kept as examples for consumers.
+
+### Project skills (`.claude/skills/`)
+Four ClickHouse-focused skills are committed for downstream consumer work. They activate via their description triggers; invoke explicitly with `Skill` when the task fits.
+
+- **`ch-schema-ddl`** — translate `click.asvc` / `session.asvc` / `user.asvc` (or the matching `.proto`) into a ClickHouse MergeTree DDL. Knows the type mapping and LowCardinality candidates.
+- **`ch-kafka-pipeline`** — self-managed three-table ingestion stack (Kafka engine + MergeTree + MV). Format-aware (`JSONEachRow` / `AvroConfluent` / `Protobuf`) based on the producer's `schemaType`.
+- **`ch-clickpipes`** — Cloud-managed alternative for ClickHouse Cloud targets. Source/destination/column-mapping template with explicit secret boundaries.
+- **`ch-query-clickstream`** — analytical SQL helpers (`windowFunnel`, conversion, observed transition matrix, retention) with the table schema cheat sheet.
+
+The skills cross-link; use them in combination when standing up a full consumer pipeline.
 
 ## Conventions and gotchas
 
