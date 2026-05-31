@@ -1,5 +1,5 @@
 {
-    "name": "click",
+    "name": "user",
     "type": "record",
     "fields": [
         {
