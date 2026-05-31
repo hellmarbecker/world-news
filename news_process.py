@@ -98,8 +98,8 @@ class Session:
         if self.startTime is None:
             self.startTime = self.eventTime
         logging.debug(f'advance(): from {self.state} to {newState}')
-        contentId = random.choice(l_content)
-        subContentId = fake.sentence(nb_words=6)[:-1]
+        self.contentId = random.choice(l_content)
+        self.subContentId = fake.sentence(nb_words=6)[:-1]
         self.state = newState
         self.statesVisited.append(newState)
 
@@ -339,16 +339,17 @@ def main():
             logging.debug('falling back to default mode')
             selector = 'default'
 
+        # If userTopic is absent from config, user records are not emitted at all.
+        userTopic = config['General'].get('userTopic')
+
         if args.dry_run:
             producer = None
             clickTopic = None
             sessionTopic = None
-            # userTopic = None
         else:
             clickTopic = config['General']['clickTopic']
             sessionTopic = config['General']['sessionTopic']
-            # userTopic = config['General']['userTopic']
-            logging.debug(f'clickTopic: {clickTopic} sessionTopic: {sessionTopic}')
+            logging.debug(f'clickTopic: {clickTopic} sessionTopic: {sessionTopic} userTopic: {userTopic}')
 
             kafkaconf = config['Kafka']
             kafkaconf['client.id'] = socket.gethostname()
@@ -413,14 +414,17 @@ def main():
                         place = fake.location_on_land()
                     )
                     logging.debug(f'new user: {newUser}')
-                    # emitUser(producer, userTopic, userSerializer, newUser)
+                    if userTopic is not None:
+                        emitUser(producer, userTopic, userSerializer, newUser)
                     allUsers[uid] = newUser
                 elif random.random() < userChangeProbability:
                     # address change
                     logging.debug(f'user {uid} changed address')
                     allUsers[uid].version += 1
+                    allUsers[uid].updatedTime = int(time.time())
                     allUsers[uid].place = fake.location_on_land()
-                    # emitUser(producer, userTopic, userSerializer, allUsers[uid])
+                    if userTopic is not None:
+                        emitUser(producer, userTopic, userSerializer, allUsers[uid])
 
                 # The new session will start on the home page and it will be assigned a random user ID
                 newSession = Session(
