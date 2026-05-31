@@ -6,4 +6,5 @@ mergedeep==1.3.4
 requests
 fastavro
 jsonschema
+protobuf
 

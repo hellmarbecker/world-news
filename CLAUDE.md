@@ -59,10 +59,12 @@ Each iteration: probabilistically create a new `Session` (capped by `maxSessions
 ### Serialization
 `srSerializer(config, item)` returns one of:
 - `PlainJSONSerializer` (default) — plain JSON, no schema, used when `SchemaRegistry.enableSchemaRegistry` is false/missing.
-- `AvroSerializer` or `JSONSerializer` from `confluent_kafka.schema_registry` — used when Schema Registry is enabled. Schema file paths per record type come from `SchemaRegistry.schemaFile.{click,session,user}`. The `.asvc` files in the repo root are the Avro schemas.
-- `protobuf` is recognized in the config switch but the serializer is **not wired up** (logs error, returns `None`).
+- `AvroSerializer` or `JSONSerializer` from `confluent_kafka.schema_registry` — used when Schema Registry is enabled and `schemaType` is `avro` or `json`. Schema file paths per record type come from `SchemaRegistry.schemaFile.{click,session,user}`. The `.asvc` files in the repo root are the Avro schemas.
+- `ProtobufSerializer` — used when `schemaType: protobuf`. For protobuf, `schemaFile` values use a `module:Class` format (e.g., `click_pb2:Click`) — the serializer dynamically imports the generated `*_pb2.py` module and derives the schema from the message class descriptor. A wrapper closure converts the emitted dict into the protobuf message via `google.protobuf.json_format.ParseDict` with `ignore_unknown_fields=True`. The `.proto` source files are at the repo root and the generated `*_pb2.py` files are committed.
 
-Use `news_config_sr.yml` as the template when enabling Schema Registry.
+Templates: `news_config_sr.yml` for Avro, `news_config_pb.yml` for protobuf.
+
+Note: `session.proto` declares explicit `int32` fields for each state in `StateMachine.States` (home, content, clickbait, subscribe, plusContent, affiliateLink, exitSession), matching the per-state flags that `emitSession` adds at news_process.py:220. If `States` ever changes, `session.proto` must be updated and `*_pb2.py` regenerated (`protoc --python_out=. *.proto`).
 
 ### Signals
 - `SIGHUP` — sets the `reconfigure` flag, breaks the inner loop, re-reads config. Existing sessions persist across the reload (only new ones see the new matrix/distributions); `maxSessions` increases take effect but does not prune already-open sessions.

@@ -2,6 +2,7 @@ import yaml
 import json
 import random
 import math
+import importlib
 from scipy import interpolate
 import time
 import argparse, sys, logging
@@ -13,7 +14,8 @@ from confluent_kafka.serialization import StringSerializer, SerializationContext
 from confluent_kafka.schema_registry import SchemaRegistryClient
 from confluent_kafka.schema_registry.avro import AvroSerializer
 from confluent_kafka.schema_registry.json_schema import JSONSerializer
-# from confluent_kafka.schema_registry.protobuf import ProtobufSerializer
+from confluent_kafka.schema_registry.protobuf import ProtobufSerializer
+from google.protobuf.json_format import ParseDict
 from mergedeep import merge
 
 
@@ -142,9 +144,15 @@ def srSerializer(config, item): # item is click or session
             case "json":
                 s = JSONSerializer(schema_str, schema_registry_client)
             case "protobuf":
-                # s = ProtobufSerializer(user_pb2.User, schema_registry_client, {'use.deprecated.format': False})
-                logging.error(f'Unsupported serializer {config["SchemaRegistry"]["schemaType"]}')
-                s = None
+                module_name, class_name = config["SchemaRegistry"]["schemaFile"][item].split(":")
+                msg_class = getattr(importlib.import_module(module_name), class_name)
+                inner = ProtobufSerializer(msg_class, schema_registry_client,
+                                           {'use.deprecated.format': False})
+                def _proto_ser(obj, ctx=None, _cls=msg_class, _inner=inner):
+                    msg = _cls()
+                    ParseDict(obj, msg, ignore_unknown_fields=True)
+                    return _inner(msg, ctx)
+                s = _proto_ser
             case _:
                 logging.error(f'Unknown serializer {config["SchemaRegistry"]["schemaType"]}')
                 s = None

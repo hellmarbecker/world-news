@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+message Click {
+    int64 timestamp = 1;
+    string record_type = 2;
+    string url = 3;
+    string useragent = 4;
+    string statuscode = 5;
+    string state = 6;
+    repeated string states_visited = 7;
+    int64 sid = 8;
+    string uid = 9;
+    int32 is_subscriber = 10;
+    string campaign = 11;
+    string channel = 12;
+    string content_id = 13;
+    string sub_content_id = 14;
+    string gender = 15;
+    string age = 16;
+    double latitude = 17;
+    double longitude = 18;
+    string place_name = 19;
+    string country_code = 20;
+    string timezone = 21;
+}

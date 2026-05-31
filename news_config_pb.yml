@@ -1,0 +1,69 @@
+# Try to include optional files. Any settings in these files override the main settings.
+IncludeOptional:
+    # Secure Kafka settings
+    - news_secret.yml
+    # Mode setting
+    - news_dynamic.yml
+General:
+    # Maximum number of sessions that can be open in the simulator at the same time
+    maxSessions: 50000
+    minSleep: 0.001
+    maxSleep: 0.004
+    # Maximum users
+    maxUsers: 100000
+    userChangeProbability: 0.005
+    # clickTopic and sessionTopic can be the same
+    clickTopic: "world-news-clicks-pb"
+    sessionTopic: "world-news-sessions-pb"
+    userTopic: "world-news-users-pb"
+Kafka:
+    bootstrap.servers: "localhost:9092"
+SchemaRegistry:
+    enableSchemaRegistry: true
+    url: "http://localhost:8081"
+    # schemaType can be one of (avro, json, protobuf)
+    schemaType: "protobuf"
+    # For protobuf, schemaFile values use the "module:Class" format pointing
+    # at generated *_pb2.py modules. The ProtobufSerializer derives the
+    # schema from the message class's descriptor; no .proto file is read
+    # at runtime.
+    schemaFile:
+        click:   "click_pb2:Click"
+        session: "session_pb2:Session"
+        user:    "user_pb2:UserRecord"
+StateMachine:
+    States: [ 'home', 'content', 'clickbait', 'subscribe', 'plusContent', 'affiliateLink', 'exitSession' ]
+    # exitState: 'exitSession'
+    # -- no need to specify the exit state explicitly; any state that does not exist as a row key in the transition matrix is an exit state
+    StateTransitionMatrix:
+        # Transition probabilities. For each mode there is a separate transition matrix. Probabilities in each row must add up to 1.
+        default: {
+            'home':          { 'home': 0.10, 'content': 0.30, 'clickbait': 0.06, 'subscribe': 0.000, 'plusContent': 0.20, 'affiliateLink': 0.02, 'exitSession': 0.32 },
+            'content':       { 'home': 0.15, 'content': 0.45, 'clickbait': 0.06, 'subscribe': 0.002, 'plusContent': 0.20, 'affiliateLink': 0.02, 'exitSession': 0.118 },
+            'clickbait':     { 'home': 0.10, 'content': 0.10, 'clickbait': 0.50, 'subscribe': 0.000, 'plusContent': 0.16, 'affiliateLink': 0.02, 'exitSession': 0.12 },
+            'subscribe':     { 'home': 0.10, 'content': 0.20, 'clickbait': 0.00, 'subscribe': 0.000, 'plusContent': 0.50, 'affiliateLink': 0.02, 'exitSession': 0.18 },
+            'plusContent':   { 'home': 0.10, 'content': 0.30, 'clickbait': 0.06, 'subscribe': 0.002, 'plusContent': 0.40, 'affiliateLink': 0.02, 'exitSession': 0.118 },
+            'affiliateLink': { 'home': 0.20, 'content': 0.20, 'clickbait': 0.00, 'subscribe': 0.000, 'plusContent': 0.05, 'affiliateLink': 0.00, 'exitSession': 0.55 }
+        }
+        special: {
+            'home':          { 'home': 0.10, 'content': 0.30, 'clickbait': 0.06, 'subscribe': 0.000,  'plusContent': 0.26, 'affiliateLink': 0.02, 'exitSession': 0.26 },
+            'content':       { 'home': 0.15, 'content': 0.45, 'clickbait': 0.06, 'subscribe': 0.0005, 'plusContent': 0.20, 'affiliateLink': 0.02, 'exitSession': 0.1195 },
+            'clickbait':     { 'home': 0.10, 'content': 0.10, 'clickbait': 0.50, 'subscribe': 0.000,  'plusContent': 0.16, 'affiliateLink': 0.02, 'exitSession': 0.12 },
+            'subscribe':     { 'home': 0.10, 'content': 0.20, 'clickbait': 0.00, 'subscribe': 0.000,  'plusContent': 0.50, 'affiliateLink': 0.02, 'exitSession': 0.18 },
+            'plusContent':   { 'home': 0.10, 'content': 0.30, 'clickbait': 0.06, 'subscribe': 0.0005, 'plusContent': 0.40, 'affiliateLink': 0.02, 'exitSession': 0.1195 },
+            'affiliateLink': { 'home': 0.20, 'content': 0.20, 'clickbait': 0.00, 'subscribe': 0.000,  'plusContent': 0.05, 'affiliateLink': 0.00, 'exitSession': 0.55 }
+        }
+ModeConfig:
+    # Results and segments for each mode
+    default:
+        channel:        { 'social media': 0.3, 'organic search': 0.2, 'paid search': 0.3, 'display': 0.1, 'affiliate': 0.1 }
+        campaign:       { 'fb-1 Be Informed': 0.3, 'fb-2 US Election': 0.4, 'af-1 Latest News': 0.2, 'google-1 Be Informed': 0.1 }
+        gender:         { 'm': 0.5, 'w': 0.5 }
+        age:            { '18-25': 0.1, '26-35': 0.1, '36-50': 0.4, '51-60': 0.3, '61+': 0.1 }
+        timeEnvelope:   [ 200, 120,  80,  50,  70, 100, 150, 250, 450, 500, 700, 650, 800, 800, 550, 450, 550, 700, 850, 1000, 950, 800, 650, 450 ]
+    special:
+        channel:        { 'social media': 0.1, 'organic search': 0.2, 'paid search': 0.3, 'display': 0.3, 'affiliate': 0.1 }
+        campaign:       { 'fb-1 Be Informed': 0.5, 'fb-2 US Election': 0.2, 'af-1 Latest News': 0.2, 'google-1 Be Informed': 0.1 }
+        gender:         { 'm': 0.5, 'w': 0.5 }
+        age:            { '18-25': 0.1, '26-35': 0.4, '36-50': 0.1, '51-60': 0.3, '61+': 0.1 }
+        timeEnvelope:   [ 200, 120,  80,  50,  70, 100, 150, 250, 450, 500, 700, 650, 800, 800, 550, 450, 550, 700, 850, 1000, 950, 800, 650, 450 ]
